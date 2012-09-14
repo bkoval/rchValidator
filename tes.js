@@ -1,19 +1,23 @@
 (function( $ ) {
-		$.fn.htmlFormValidator = function( eventType, formHandler ) {
+		$.fn.htmlFormValidator = function( eventType ) {
 		//Validator's API
 	//	var validator = (function() {
 			//Validation engine
-			debugger;
+
+			var formHandler = this;
+
 			function validate (e) {
 
 				e.preventDefault();
 
-				var formHandler = this; //self
+				//var formHandler = this; //self
 
 				function validationTest(pattern, stringToBeTested){
 
 					return (pattern.test(stringToBeTested) || !stringToBeTested) ? true : false;
 				}
+
+				debugger;
 
 				//Banned Characters Dictionary	
 				var banned =  {
@@ -41,9 +45,7 @@
 				};
 
 				//Errors storage object
-				var errors = {
-
-				};
+				var errors = {};
 
 				errors.addError = function (formInstance, fieldRecognitionString){
 					
@@ -58,24 +60,27 @@
 
 				};
 
-				//variable that stores a specific type of field inside the loop
-				var patternName;
+				//var temp = Array.prototype.slice.call( formHandler.elements );
+
+				var inputList = formHandler.children('fieldset').children('input');
 
 
-
-				var temp = Array.prototype.slice.call( formHandler.elements );
-
-				temp.forEach( function test ( obj ) {
+				debugger;
+				
+				function validationLoop(index, obj){
 			
 						if(banned.hasOwnProperty(obj.type)){
 
 							if(validationTest(banned[obj.type].pattern, obj.value)){
 								errors.addError(formHandler, obj.type + '_' + obj.name + '_' + obj.id);
 							}
-						}	
+						}
 
-				});
+				};
+				
 
+				$.each(inputList, function( index, obj ){validationLoop(index, obj);});
+								debugger;
 				if(!errors.hasOwnProperty(formHandler.name)){
 					
 					formHandler.submit();
@@ -88,8 +93,17 @@
 			//Function that watches for sumit event and triggers validator
 			function watch( eventType, formHandler ){
 				debugger;
-				formHandler.addEventListener( eventType, validate, false );
+				//formHandler.addEventListener( eventType, validate, false );
+				
+				$.each(formHandler.children('input'), function(index, input){
+					debugger;
+					if(input.type == 'submit'){
+						input.on( 'click', validate);
+					}
+				});
+
 			}
+
 
 
 			//return {
@@ -108,7 +122,7 @@
 
 $( document ).ready(function() {
 
-	$('document').htmlFormValidator("submit", document.forms[0]);
-	$('document').htmlFormValidator("submit", document.forms[1]);
+	$('#details').htmlFormValidator("submit"/*, document.forms[0]*/);
+	$('#details2').htmlFormValidator("submit"/*, document.forms[1]*/);
 
 });
