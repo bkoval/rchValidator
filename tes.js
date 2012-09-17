@@ -98,7 +98,7 @@
 				$.each(formHandler.children('input'), function(index, input){
 					debugger;
 					if(input.type == 'submit'){
-						input.on( 'click', validate);
+						$(input).on( 'click', validate);
 					}
 				});
 
