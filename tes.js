@@ -1,55 +1,19 @@
 (function( $ ) {
 		$.fn.htmlFormValidator = function( eventType ) {
-		//Validator's API
-	//	var validator = (function() {
-			//Validation engine
 
-			var formHandler = this;
+			var formHandler = this; //jquery oject that 'keeps' the form
 
-			function validate (e) {
+			function validate (e) { //main piece of validator - the actual validation starts here
 
-				e.preventDefault();
+				//DECLARATIONS & DEFINITIONS
 
-				//var formHandler = this; //self
+				var errors = {}; //object that is used as errors storage
 
-				function validationTest(pattern, stringToBeTested){
+				var inputList; // will be an array of inputs to check in the form
 
-					return (pattern.test(stringToBeTested) || !stringToBeTested) ? true : false;
-				}
-
-				debugger;
-
-				//Banned Characters Dictionary	
-				var banned =  {
-
-					'email': {
-					 	'pattern': /[^A-z, 0-9, \@, \.]/,
-						'error': 'bad email'
-					},
-
-					'text': {
-					 	'pattern': /[^A-z]/,
-						'error': 'bad text'
-					},
+				errors.addError = function ( formInstance, fieldRecognitionString ){ //mechanism that adds errors from specific forms
 					
-					'number': {
-					 	'pattern': /[^0-9]/,
-						'error': 'bad phone number'
-					},
-
-					'date': {
-					 	'pattern': /[^0-9, \-]/,
-						'error': 'bad date format'
-					}
-
-				};
-
-				//Errors storage object
-				var errors = {};
-
-				errors.addError = function (formInstance, fieldRecognitionString){
-					
-					if(!this[formInstance.name]){
+					if( !this[formInstance.name] ){
 						
 						this[formInstance.name] = {};
 					}
@@ -60,28 +24,67 @@
 
 				};
 
-				//var temp = Array.prototype.slice.call( formHandler.elements );
+				var banned =  { //Dictionary of banned chars for each type (including ready-to-display error msgs)
 
-				var inputList = formHandler.children('fieldset').children('input');
+					'email': {
+					 	'pattern': /[^A-z, 0-9, \@, \.]/,
+						'error': 'Your email address contains forbidden characters!'
+					},
 
+					'text': {
+					 	'pattern': /[^A-z]/,
+						'error': 'Your text contains characters that are not only letters!'
+					},
+					
+					'number': {
+					 	'pattern': /[^0-9]/,
+						'error': 'Your phone number contains forbidden characters!'
+					},
 
-				debugger;
-				
-				function validationLoop(index, obj){
+					'date': {
+					 	'pattern': /[^0-9, \-]/,
+						'error': 'Your date is in bad format!'
+					}
+
+				};
+
+				function validationTest( pattern, stringToBeTested ){ //detects whether the phrase contains banned chars or not
+
+					return ( pattern.test(stringToBeTested ) || !stringToBeTested ) ? true : false;
+				}
+
+				function validationLoop( index, obj ){ //this will iterate on all input fields in form and check if it's valid using validationTest
 			
-						if(banned.hasOwnProperty(obj.type)){
+						if( banned.hasOwnProperty( obj.type ) ){
 
-							if(validationTest(banned[obj.type].pattern, obj.value)){
-								errors.addError(formHandler, obj.type + '_' + obj.name + '_' + obj.id);
+							if( validationTest( banned[obj.type].pattern, obj.value ) ){
+
+								errors.addError( formHandler, obj.type + '_' + obj.name + '_' + obj.id );
+
 							}
 						}
 
 				};
-				
 
-				$.each(inputList, function( index, obj ){validationLoop(index, obj);});
-								debugger;
-				if(!errors.hasOwnProperty(formHandler.name)){
+				//ACTUAL START OF VALIDATION PROCESS
+				
+				e.preventDefault(); //prevents from submitting till the validation completes
+
+				if ( formHandler.children( 'fieldset' ).length ){ //if there is fieldset
+					
+					inputList = formHandler.children( 'fieldset' ).children( 'input' ); //collects the array of inputs in the form
+
+				}
+
+				else{ //if there isn't one
+
+					inputList = formHandler.children( 'input' );
+
+				}
+				
+				$.each(inputList, function( index, obj ){ validationLoop( index, obj ); });
+
+				if(!errors.hasOwnProperty( formHandler.name )){
 					
 					formHandler.submit();
 				
@@ -89,31 +92,21 @@
 				
 			}
 
-
-			//Function that watches for sumit event and triggers validator
-			function watch( eventType, formHandler ){
-				debugger;
-				//formHandler.addEventListener( eventType, validate, false );
+			function watch( eventType ){ //function that produces detector watching for event 'clicking on submit button'			
 				
-				$.each(formHandler.children('input'), function(index, input){
-					debugger;
-					if(input.type == 'submit'){
-						$(input).on( 'click', validate);
+				$.each( formHandler.children( 'input' ), function( index, input ){
+					
+					if( input.type == 'submit' ){
+						
+						$( input ).on( 'click', validate );
+
 					}
+
 				});
 
 			}
 
-
-
-			//return {
-				//validate: validate,
-				//watch: watch
-			//};
-
-			watch(eventType, formHandler);
-			
-	//	})(this);
+			watch( eventType, formHandler ); //here watching starts
 
 		};
 
@@ -122,7 +115,7 @@
 
 $( document ).ready(function() {
 
-	$('#details').htmlFormValidator("submit"/*, document.forms[0]*/);
-	$('#details2').htmlFormValidator("submit"/*, document.forms[1]*/);
+	$( '#details' ).htmlFormValidator( 'submit' );
+	$( '#details2' ).htmlFormValidator( 'submit' );
 
 });
