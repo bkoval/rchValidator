@@ -1,30 +1,31 @@
 (function( $ ) {
-		$.fn.htmlFormValidator = function( eventType ) {
 
-			var formHandler = this; //jquery oject that 'keeps' the form
+		var methods = {
 
-			function validate (e) { //main piece of validator - the actual validation starts here
-
-				//DECLARATIONS & DEFINITIONS
-
-				var errors = {}; //object that is used as errors storage
+			init: function( formHandler ){
+				
+				this.formHandler = formHandler;
 
 				var inputList; // will be an array of inputs to check in the form
 
-				errors.addError = function ( formInstance, fieldRecognitionString ){ //mechanism that adds errors from specific forms
-					
-					if( !this[formInstance.name] ){
+				this.errors = { //object that is used as errors storage
+
+					addError: function ( formInstance, fieldRecognitionString ){ //mechanism that adds errors from specific forms
 						
-						this[formInstance.name] = {};
+						if( !this[formInstance.name] ){
+							
+							this[formInstance.name] = {};
+						}
+
+						var formErrorsObject = this[formInstance.name];
+
+						formErrorsObject[fieldRecognitionString] = {};
+
 					}
-
-					var formErrorsObject = this[formInstance.name];
-
-					formErrorsObject[fieldRecognitionString] = {};
 
 				};
 
-				var banned =  { //Dictionary of banned chars for each type (including ready-to-display error msgs)
+				this.banned =  { //Dictionary of banned chars for each type (including ready-to-display error msgs)
 
 					'email': {
 					 	'pattern': /[^A-z, 0-9, \@, \.]/,
@@ -47,58 +48,63 @@
 					}
 
 				};
+			},
 
-				function validationTest( pattern, stringToBeTested ){ //detects whether the phrase contains banned chars or not
+			validationTest: function ( pattern, stringToBeTested ){ //detects whether the phrase contains banned chars or not
 
-					return ( pattern.test(stringToBeTested ) || !stringToBeTested ) ? true : false;
+				return ( pattern.test( stringToBeTested ) || !stringToBeTested ) ? true : false;
+			},
+
+			validationLoop: function ( index, obj ){ //this will iterate on all input fields in form and check if it's valid using validationTest
+		
+				if( this.banned.hasOwnProperty( obj.type ) ){
+
+					if( methods.validationTest( this.banned[obj.type].pattern, obj.value ) ){
+
+						methods.errors.addError( this.formHandler, obj.type + '_' + obj.name + '_' + obj.id );
+
+					}
 				}
 
-				function validationLoop( index, obj ){ //this will iterate on all input fields in form and check if it's valid using validationTest
+			},
+
+			validate: function ( e, formHandler ) { //main piece of validator - the actual validation starts here
 			
-						if( banned.hasOwnProperty( obj.type ) ){
-
-							if( validationTest( banned[obj.type].pattern, obj.value ) ){
-
-								errors.addError( formHandler, obj.type + '_' + obj.name + '_' + obj.id );
-
-							}
-						}
-
-				};
-
-				//ACTUAL START OF VALIDATION PROCESS
-				
 				e.preventDefault(); //prevents from submitting till the validation completes
+
+				debugger;
 
 				if ( formHandler.children( 'fieldset' ).length ){ //if there is fieldset
 					
-					inputList = formHandler.children( 'fieldset' ).children( 'input' ); //collects the array of inputs in the form
+					this.inputList = formHandler.children( 'fieldset' ).children( 'input' ); //collects the array of inputs in the form
 
 				}
 
 				else{ //if there isn't one
 
-					inputList = formHandler.children( 'input' );
+					this.inputList = formHandler.children( 'input' );
 
 				}
 				
-				$.each(inputList, function( index, obj ){ validationLoop( index, obj ); });
+				$.each(this.inputList, function( index, obj ){ methods.validationLoop( index, obj ); });
 
-				if(!errors.hasOwnProperty( formHandler.name )){
+				debugger;
+
+				if( !this.errors.hasOwnProperty( formHandler.name ) ){
 					
 					formHandler.submit();
 				
 				}
 				
-			}
+			},
 
-			function watch( eventType ){ //function that produces detector watching for event 'clicking on submit button'			
-				
+			watch: function ( eventType, formHandler ){ //function that produces detector watching for event 'clicking on submit button'			
+			
 				$.each( formHandler.children( 'input' ), function( index, input ){
 					
 					if( input.type == 'submit' ){
 						
-						$( input ).on( 'click', validate );
+						$( input ).on( 'click', function (){methods.validate( event, formHandler )} );
 
 					}
 
@@ -106,7 +112,26 @@
 
 			}
 
-			watch( eventType, formHandler ); //here watching starts
+		}
+
+		$.fn.RCHhtmlFormValidator = function( method, eventType ) {
+
+			var formHandler = this; //jquery oject that 'keeps' the form
+			methods.init(formHandler);
+			methods.watch( eventType, formHandler ); //here watching starts
+
+			    // Method calling logic
+		    /*if ( methods[method] ) {
+		      	return methods[method].apply( this, Array.prototype.slice.call( arguments, 1 ));
+		    } 
+		    else if ( typeof method === 'object' || ! method ) {
+		      		return methods.init.apply( this, arguments );
+		    	} 
+
+		   		else {
+		      		$.error( 'Method ' +  method + ' does not exist on jQuery.tooltip' );
+		    	}
+		    }*/
 
 		};
 
@@ -115,7 +140,7 @@
 
 $( document ).ready(function() {
 
-	$( '#details' ).htmlFormValidator( 'submit' );
-	$( '#details2' ).htmlFormValidator( 'submit' );
+	$( '#details' ).RCHhtmlFormValidator( 'submit' );
+	$( '#details2' ).RCHhtmlFormValidator( 'submit' );
 
 });
