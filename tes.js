@@ -25,7 +25,7 @@
 
 				};
 
-				this.banned =  { //Dictionary of banned chars for each type (including ready-to-display error msgs)
+				this.banned =  { //Dictionary of banned chars for each type (including ready-to-display error msgs).
 
 					'email': {
 					 	'pattern': /[^A-z, 0-9, \@, \.]/,
